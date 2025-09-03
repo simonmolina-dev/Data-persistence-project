@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
+using UnityEditor.Overlays;
+using System.IO;
 
 public class MainManager : MonoBehaviour
 {
@@ -12,6 +14,9 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text PlayerNameMain;
+    public Text m_BestScore;
+    public int CountBestScore=0;
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -23,6 +28,7 @@ public class MainManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        PlayerNameMain.text = MenuManager.Instance.PlayerName.text;
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -61,6 +67,7 @@ public class MainManager : MonoBehaviour
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
         }
+        BestScore();
     }
 
     void AddPoint(int point)
@@ -68,10 +75,40 @@ public class MainManager : MonoBehaviour
         m_Points += point;
         ScoreText.text = $"Score : {m_Points}";
     }
-
+    void BestScore()
+    {
+        if (CountBestScore< m_Points)
+        {
+            CountBestScore= m_Points;
+            m_BestScore.text = $"Best Score : {CountBestScore}";
+        }
+    }
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+    }
+
+    [System.Serializable]
+    class SaveData
+    {
+        public int CountBestScore;
+    }
+    public void SaveScore()
+    {
+        SaveData data = new SaveData();
+        data.CountBestScore = CountBestScore;
+        string json = JsonUtility.ToJson(data);
+        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
+    }
+    public void LoadScore()
+    {
+        string path = Application.persistentDataPath + "/savefile.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            SaveData data = JsonUtility.FromJson<SaveData>(json);
+            CountBestScore = data.CountBestScore;
+        }
     }
 }
