@@ -1,6 +1,7 @@
 using UnityEngine;
 using  TMPro;
 using UnityEngine.SceneManagement;
+using System.IO;
 public class Menu : MonoBehaviour
 {
     public TMP_InputField inputField;
@@ -9,16 +10,6 @@ public class Menu : MonoBehaviour
     {
         inputField.Select();
         inputField.ActivateInputField();
-        MenuManager.Instance.PlayerName.text = inputField.text ;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-    public void StartNew()
-    {
-        SceneManager.LoadScene(1);
-    }
+     }
+    
 }

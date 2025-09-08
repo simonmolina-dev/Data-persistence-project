@@ -6,6 +6,8 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEditor.Overlays;
 using System.IO;
+using UnityEditor;
+using JetBrains.Annotations;
 
 public class MainManager : MonoBehaviour
 {
@@ -16,19 +18,20 @@ public class MainManager : MonoBehaviour
     public Text ScoreText;
     public Text PlayerNameMain;
     public Text m_BestScore;
-    public int CountBestScore=0;
+    public static int CountBestScore;
     public GameObject GameOverText;
     
     private bool m_Started = false;
-    private int m_Points;
+    private static int m_Points;
     
     private bool m_GameOver = false;
 
-    
-    // Start is called before the first frame update
     void Start()
     {
-        PlayerNameMain.text = MenuManager.Instance.PlayerName.text;
+        LoadScore();
+        PlayerNameMain.text = MenuManager.Instance.LoadPlayerName();
+        UpdateUI();
+        m_Points = 0;
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -67,48 +70,57 @@ public class MainManager : MonoBehaviour
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
         }
-        BestScore();
+        UpdateUI();
     }
 
-    void AddPoint(int point)
+    public static void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
-    }
-    void BestScore()
-    {
-        if (CountBestScore< m_Points)
+        if (CountBestScore < m_Points)
         {
-            CountBestScore= m_Points;
-            m_BestScore.text = $"Best Score : {CountBestScore}";
+            CountBestScore = m_Points;
         }
+    }
+    private void UpdateUI()
+    {   
+        ScoreText.text = $"Score : {m_Points}";
+        m_BestScore.text = $"Best Score : {CountBestScore}";
     }
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        SaveScore();
     }
-
+    public void Exit()
+    {
+        SaveScore();
+        //SavePlayerName();
+        EditorApplication.ExitPlaymode();
+    }
     [System.Serializable]
-    class SaveData
+    public class SaveData
     {
         public int CountBestScore;
+        public Text PlayerNameMain;
     }
+  
     public void SaveScore()
     {
-        SaveData data = new SaveData();
-        data.CountBestScore = CountBestScore;
-        string json = JsonUtility.ToJson(data);
-        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
+        string filePath = Application.persistentDataPath + "/savefilescore.json";
+        SaveData datascore = new SaveData();
+        datascore.CountBestScore = CountBestScore;
+        string json = JsonUtility.ToJson(datascore);
+        File.WriteAllText(filePath, json);
     }
     public void LoadScore()
     {
-        string path = Application.persistentDataPath + "/savefile.json";
+        string path = Application.persistentDataPath + "/savefilescore.json";
         if (File.Exists(path))
         {
             string json = File.ReadAllText(path);
-            SaveData data = JsonUtility.FromJson<SaveData>(json);
-            CountBestScore = data.CountBestScore;
+            SaveData datascore = JsonUtility.FromJson<SaveData>(json);
+            CountBestScore = datascore.CountBestScore;
         }
     }
 }
