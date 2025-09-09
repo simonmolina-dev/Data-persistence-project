@@ -4,9 +4,10 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
-using UnityEditor.Overlays;
 using System.IO;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using JetBrains.Annotations;
 
 public class MainManager : MonoBehaviour
@@ -26,7 +27,7 @@ public class MainManager : MonoBehaviour
     
     private bool m_GameOver = false;
 
-    void Start()
+    private void Start()
     {
         LoadScore();
         PlayerNameMain.text = MenuManager.Instance.LoadPlayerName();
@@ -95,9 +96,16 @@ public class MainManager : MonoBehaviour
     public void Exit()
     {
         SaveScore();
-        //SavePlayerName();
+        MenuManager.Instance.SaveName(PlayerNameMain.text);
+        #if UNITY_EDITOR
+        EditorApplication.isPlaying = false;
         EditorApplication.ExitPlaymode();
+        #else
+        Application.Quit();
+        #endif
+
     }
+
     [System.Serializable]
     public class SaveData
     {

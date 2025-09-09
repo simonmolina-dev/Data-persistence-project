@@ -15,6 +15,7 @@ public class PlayerData
 public class MenuManager : MonoBehaviour
 {
     public static MenuManager Instance;
+    public Button startButton;
     public TMP_InputField nameInput;  
     public void Awake()
     {
@@ -26,25 +27,19 @@ public class MenuManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
-    void Start()
+    private void Start()
     {
+        startButton.gameObject.SetActive(true);
+        startButton.interactable = true;
         string savedName = LoadPlayerName();
         if(!string.IsNullOrEmpty(savedName))
         {
             nameInput.text = savedName;
         }
-        StartCoroutine(ActivateInputNextFrame());
     }
-    private IEnumerator ActivateInputNextFrame()
+
+    public void SaveName(string playerName)
     {
-        yield return null; // wait 1 frame
-        nameInput.ActivateInputField(); // focus the field
-        nameInput.Select();              // make TMP think it's selected
-        nameInput.caretPosition = nameInput.text.Length;
-    }
-    public void SaveName()
-    {
-        string playerName = nameInput.text;
         if (!string.IsNullOrEmpty(playerName))
         {
             File.WriteAllText(Application.persistentDataPath + "/playername.json", playerName);
@@ -67,9 +62,10 @@ public class MenuManager : MonoBehaviour
 
         return ""; 
     }
+    
     public void StartNew()
     {
-        SaveName();
+        SaveName(nameInput.text);
         SceneManager.LoadScene(1);
     }
 
